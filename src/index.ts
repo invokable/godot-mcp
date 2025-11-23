@@ -126,7 +126,7 @@ class GodotServer {
 
         // Validate immediately with sync check
         if (!this.isValidGodotPathSync(this.godotPath)) {
-          console.warn(`[SERVER] Invalid custom Godot path provided: ${this.godotPath}`);
+          console.error(`[SERVER] Invalid custom Godot path provided: ${this.godotPath}`);
           this.godotPath = null; // Reset to trigger auto-detection later
         }
       }
@@ -134,7 +134,7 @@ class GodotServer {
 
     // Set the path to the operations script
     this.operationsScriptPath = join(__dirname, 'scripts', 'godot_operations.gd');
-    if (debugMode) console.debug(`[DEBUG] Operations script path: ${this.operationsScriptPath}`);
+    if (debugMode) console.error(`[DEBUG] Operations script path: ${this.operationsScriptPath}`);
 
     // Initialize the MCP server
     this.server = new Server(
@@ -167,7 +167,7 @@ class GodotServer {
    */
   private logDebug(message: string): void {
     if (DEBUG_MODE) {
-      console.debug(`[DEBUG] ${message}`);
+      console.error(`[DEBUG] ${message}`);
     }
   }
 
@@ -317,7 +317,8 @@ class GodotServer {
         '/usr/bin/godot',
         '/usr/local/bin/godot',
         '/snap/bin/godot',
-        `${process.env.HOME}/.local/bin/godot`
+        `${process.env.HOME}/.local/bin/godot`,
+        '/mnt/d/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe'
       );
     }
 
@@ -333,8 +334,8 @@ class GodotServer {
 
     // If we get here, we couldn't find Godot
     this.logDebug(`Warning: Could not find Godot in common locations for ${osPlatform}`);
-    console.warn(`[SERVER] Could not find Godot in common locations for ${osPlatform}`);
-    console.warn(`[SERVER] Set GODOT_PATH=/path/to/godot environment variable or pass { godotPath: '/path/to/godot' } in the config to specify the correct path.`);
+    console.error(`[SERVER] Could not find Godot in common locations for ${osPlatform}`);
+    console.error(`[SERVER] Set GODOT_PATH=/path/to/godot environment variable or pass { godotPath: '/path/to/godot' } in the config to specify the correct path.`);
 
     if (this.strictPathValidation) {
       // In strict mode, throw an error
@@ -350,8 +351,8 @@ class GodotServer {
       }
 
       this.logDebug(`Using default path: ${this.godotPath}, but this may not work.`);
-      console.warn(`[SERVER] Using default path: ${this.godotPath}, but this may not work.`);
-      console.warn(`[SERVER] This fallback behavior will be removed in a future version. Set strictPathValidation: true to opt-in to the new behavior.`);
+      console.error(`[SERVER] Using default path: ${this.godotPath}, but this may not work.`);
+      console.error(`[SERVER] This fallback behavior will be removed in a future version. Set strictPathValidation: true to opt-in to the new behavior.`);
     }
   }
 
@@ -2179,9 +2180,9 @@ class GodotServer {
           process.exit(1);
         } else {
           // In compatibility mode, warn but continue with the default path
-          console.warn(`[SERVER] Warning: Using potentially invalid Godot path: ${this.godotPath}`);
-          console.warn('[SERVER] This may cause issues when executing Godot commands');
-          console.warn('[SERVER] This fallback behavior will be removed in a future version. Set strictPathValidation: true to opt-in to the new behavior.');
+          console.error(`[SERVER] Warning: Using potentially invalid Godot path: ${this.godotPath}`);
+          console.error('[SERVER] This may cause issues when executing Godot commands');
+          console.error('[SERVER] This fallback behavior will be removed in a future version. Set strictPathValidation: true to opt-in to the new behavior.');
         }
       }
 
