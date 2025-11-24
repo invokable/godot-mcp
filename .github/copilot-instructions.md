@@ -30,6 +30,50 @@ npm run build    # TypeScriptをコンパイルしてbuild/に出力
 主な作業は元のリポジトリへのプルリクエストを取り込むことなので
 「https://github.com/Coding-Solo/godot-mcp/pull/* を取り込んでマージして」の指示に対して以下の作業を行う。
 
+### 手順
+
+1. **PRの情報取得**
+   ```bash
+   # GitHub APIでPRの詳細とdiffを取得
+   gh pr view {PR番号} --repo Coding-Solo/godot-mcp
+   ```
+
+2. **PRブランチのフェッチ**
+   ```bash
+   # upstreamリモートからPRをローカルブランチとしてフェッチ
+   git fetch upstream pull/{PR番号}/head:pr-{PR番号}
+   ```
+
+3. **マージの実行**
+   ```bash
+   # 現在のブランチにマージ（通常はpatchブランチ）
+   git merge pr-{PR番号} --no-edit
+   ```
+
+4. **ビルドとテスト**
+   ```bash
+   # TypeScriptのコンパイル
+   npm run build
+   
+   # 動作確認（必要に応じて）
+   node build/index.js
+   ```
+
+5. **確認**
+   ```bash
+   # マージコミットの確認
+   git log --oneline -5
+   
+   # 変更内容の確認
+   git diff HEAD~1 HEAD
+   ```
+
+### 注意点
+
+- `upstream`リモートは`https://github.com/Coding-Solo/godot-mcp.git`を指している必要がある
+- 競合が発生した場合は手動で解決してからコミット
+- マージ後は必ず`npm run build`を実行してビルド成功を確認
+
 ## GitHub Copilot CLI用MCP設定
 
 macOSとWSLでパスが違うので分けて設定。  
