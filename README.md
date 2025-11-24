@@ -1,4 +1,3 @@
-
 # Godot MCP
 
 [![Github-sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Coding-Solo)
@@ -53,45 +52,45 @@
                          |__/     |__/ \______/ |__/       
 ```
 
-A Model Context Protocol (MCP) server for interacting with the Godot game engine.
+Godotゲームエンジンと連携するためのModel Context Protocol (MCP) サーバーです。
 
-## Introduction
+## はじめに
 
-Godot MCP enables AI assistants to launch the Godot editor, run projects, capture debug output, and control project execution - all through a standardized interface.
+Godot MCPは、AIアシスタントがGodotエディターの起動、プロジェクトの実行、デバッグ出力の取得、プロジェクト実行の制御を標準化されたインターフェースを通じて行えるようにします。
 
-This direct feedback loop helps AI assistants like Claude understand what works and what doesn't in real Godot projects, leading to better code generation and debugging assistance.
+この直接的なフィードバックループにより、ClaudeなどのAIアシスタントが実際のGodotプロジェクトで何が機能し何が機能しないかを理解できるようになり、より良いコード生成とデバッグ支援が可能になります。
 
-## Features
+## 機能
 
-- **Launch Godot Editor**: Open the Godot editor for a specific project
-- **Run Godot Projects**: Execute Godot projects in debug mode
-- **Capture Debug Output**: Retrieve console output and error messages
-- **Control Execution**: Start and stop Godot projects programmatically
-- **Get Godot Version**: Retrieve the installed Godot version
-- **List Godot Projects**: Find Godot projects in a specified directory
-- **Project Analysis**: Get detailed information about project structure
-- **Scene Management**:
-  - Create new scenes with specified root node types
-  - Add nodes to existing scenes with customizable properties
-  - Load sprites and textures into Sprite2D nodes
-  - Export 3D scenes as MeshLibrary resources for GridMap
-  - Save scenes with options for creating variants
-  - Analyze scene structure with hierarchical node information, properties, and signal connections
-- **UID Management** (for Godot 4.4+):
-  - Get UID for specific files
-  - Update UID references by resaving resources
+- **Godotエディターの起動**: 特定のプロジェクトに対してGodotエディターを開く
+- **Godotプロジェクトの実行**: デバッグモードでGodotプロジェクトを実行
+- **デバッグ出力の取得**: コンソール出力とエラーメッセージを取得
+- **実行制御**: プログラム的にGodotプロジェクトを開始・停止
+- **Godotバージョンの取得**: インストールされているGodotのバージョンを取得
+- **Godotプロジェクトの一覧表示**: 指定されたディレクトリ内のGodotプロジェクトを検索
+- **プロジェクト解析**: プロジェクト構造に関する詳細情報を取得
+- **シーン管理**:
+  - 指定したルートノードタイプで新しいシーンを作成
+  - カスタマイズ可能なプロパティを持つノードを既存のシーンに追加
+  - Sprite2Dノードにスプライトとテクスチャを読み込む
+  - 3DシーンをGridMap用のMeshLibraryリソースとしてエクスポート
+  - バリアント作成オプション付きでシーンを保存
+  - 階層的なノード情報、プロパティ、シグナル接続を含むシーン構造を解析
+- **UID管理** (Godot 4.4以降向け):
+  - 特定のファイルのUIDを取得
+  - リソースを再保存してUID参照を更新
 
-## Requirements
+## 必要要件
 
-- [Godot Engine](https://godotengine.org/download) installed on your system
-- Node.js and npm
-- An AI assistant that supports MCP (Cline, Cursor, etc.)
+- システムに[Godot Engine](https://godotengine.org/download)がインストールされていること
+- Node.jsとnpm
+- MCPをサポートするAIアシスタント(Cline、Cursorなど)
 
-## Installation and Configuration
+## インストールと設定
 
-### Step 1: Install and Build
+### ステップ1: インストールとビルド
 
-First, clone the repository and build the MCP server:
+まず、リポジトリをクローンしてMCPサーバーをビルドします:
 
 ```bash
 git clone https://github.com/Coding-Solo/godot-mcp.git
@@ -100,11 +99,11 @@ npm install
 npm run build
 ```
 
-### Step 2: Configure with Your AI Assistant
+### ステップ2: AIアシスタントの設定
 
-#### Option A: Configure with Cline
+#### オプションA: Clineで設定
 
-Add to your Cline MCP settings file (`~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`):
+ClineのMCP設定ファイル(`~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`)に追加:
 
 ```json
 {
@@ -113,7 +112,7 @@ Add to your Cline MCP settings file (`~/Library/Application Support/Code/User/gl
       "command": "node",
       "args": ["/absolute/path/to/godot-mcp/build/index.js"],
       "env": {
-        "DEBUG": "true"                  // Optional: Enable detailed logging
+        "DEBUG": "true"                  // オプション: 詳細ログを有効化
       },
       "disabled": false,
       "autoApprove": [
@@ -138,22 +137,22 @@ Add to your Cline MCP settings file (`~/Library/Application Support/Code/User/gl
 }
 ```
 
-#### Option B: Configure with Cursor
+#### オプションB: Cursorで設定
 
-**Using the Cursor UI:**
+**Cursor UIを使用:**
 
-1. Go to **Cursor Settings** > **Features** > **MCP**
-2. Click on the **+ Add New MCP Server** button
-3. Fill out the form:
-   - Name: `godot` (or any name you prefer)
+1. **Cursor Settings** > **Features** > **MCP**に移動
+2. **+ Add New MCP Server**ボタンをクリック
+3. フォームに入力:
+   - Name: `godot` (または任意の名前)
    - Type: `command`
    - Command: `node /absolute/path/to/godot-mcp/build/index.js`
-4. Click "Add"
-5. You may need to press the refresh button in the top right corner of the MCP server card to populate the tool list
+4. 「Add」をクリック
+5. MCPサーバーカードの右上にあるリフレッシュボタンを押してツールリストを更新する必要がある場合があります
 
-**Using Project-Specific Configuration:**
+**プロジェクト固有の設定を使用:**
 
-Create a file at `.cursor/mcp.json` in your project directory with the following content:
+プロジェクトディレクトリに`.cursor/mcp.json`ファイルを作成し、以下の内容を記述:
 
 ```json
 {
@@ -162,16 +161,16 @@ Create a file at `.cursor/mcp.json` in your project directory with the following
       "command": "node",
       "args": ["/absolute/path/to/godot-mcp/build/index.js"],
       "env": {
-        "DEBUG": "true"                  // Enable detailed logging
+        "DEBUG": "true"                  // 詳細ログを有効化
       }
     }
   }
 }
 ```
 
-#### Option C: Configure with Windsurf
+#### オプションC: Windsurfで設定
 
-Add to your Windsurf MCP config file mcp_config.json:
+Windsurfの設定ファイルmcp_config.jsonに追加:
 
 ```json
 {
@@ -188,77 +187,77 @@ Add to your Windsurf MCP config file mcp_config.json:
 ```
 
 
-### Step 3: Optional Environment Variables
+### ステップ3: オプションの環境変数
 
-You can customize the server behavior with these environment variables:
+以下の環境変数でサーバーの動作をカスタマイズできます:
 
-- `GODOT_PATH`: Path to the Godot executable (overrides automatic detection)
-- `DEBUG`: Set to "true" to enable detailed server-side debug logging
+- `GODOT_PATH`: Godot実行ファイルへのパス(自動検出を上書き)
+- `DEBUG`: サーバー側の詳細デバッグログを有効にするには"true"に設定
 
-## Example Prompts
+## プロンプトの例
 
-Once configured, your AI assistant will automatically run the MCP server when needed. You can use prompts like:
+設定が完了すると、AIアシスタントは必要に応じて自動的にMCPサーバーを実行します。以下のようなプロンプトを使用できます:
 
 ```text
-"Launch the Godot editor for my project at /path/to/project"
+"/path/to/projectにある私のプロジェクトのGodotエディターを起動して"
 
-"Run my Godot project and show me any errors"
+"私のGodotプロジェクトを実行してエラーを表示して"
 
-"Get information about my Godot project structure"
+"私のGodotプロジェクトの構造情報を取得して"
 
-"Analyze my Godot project structure and suggest improvements"
+"私のGodotプロジェクトの構造を解析して改善案を提案して"
 
-"Help me debug this error in my Godot project: [paste error]"
+"このGodotプロジェクトのエラーをデバッグするのを手伝って: [エラーを貼り付け]"
 
-"Write a GDScript for a character controller with double jump and wall sliding"
+"ダブルジャンプと壁滑りのあるキャラクターコントローラーのGDScriptを書いて"
 
-"Create a new scene with a Player node in my Godot project"
+"私のGodotプロジェクトにPlayerノードを持つ新しいシーンを作成して"
 
-"Add a Sprite2D node to my player scene and load the character texture"
+"私のプレイヤーシーンにSprite2Dノードを追加してキャラクターテクスチャを読み込んで"
 
-"Export my 3D models as a MeshLibrary for use with GridMap"
+"GridMapで使用するために3DモデルをMeshLibraryとしてエクスポートして"
 
-"Create a UI scene with buttons and labels for my game's main menu"
+"ゲームのメインメニュー用にボタンとラベルを含むUIシーンを作成して"
 
-"Get the UID for a specific script file in my Godot 4.4 project"
+"Godot 4.4プロジェクトの特定のスクリプトファイルのUIDを取得して"
 
-"Update UID references in my Godot project after upgrading to 4.4"
+"4.4にアップグレードした後、GodotプロジェクトのUID参照を更新して"
 
-"Review the scene structure of Main.tscn and trace why the player's health_changed signal isn't reaching the HealthBar UI element"
+"Main.tscnのシーン構造を確認して、プレイヤーのhealth_changedシグナルがHealthBar UI要素に届かない理由を追跡して"
 ```
 
-## Implementation Details
+## 実装の詳細
 
-### Architecture
+### アーキテクチャ
 
-The Godot MCP server uses a bundled GDScript approach for complex operations:
+Godot MCPサーバーは、複雑な操作にバンドルされたGDScriptアプローチを使用しています:
 
-1. **Direct Commands**: Simple operations like launching the editor or getting project info use Godot's built-in CLI commands directly.
-2. **Bundled Operations Script**: Complex operations like creating scenes or adding nodes use a single, comprehensive GDScript file (`godot_operations.gd`) that handles all operations.
+1. **直接コマンド**: エディターの起動やプロジェクト情報取得などのシンプルな操作は、Godotの組み込みCLIコマンドを直接使用します。
+2. **バンドルされた操作スクリプト**: シーンの作成やノードの追加などの複雑な操作は、すべての操作を処理する単一の包括的なGDScriptファイル(`godot_operations.gd`)を使用します。
 
-This architecture provides several benefits:
+このアーキテクチャは以下のような利点を提供します:
 
-- **No Temporary Files**: Eliminates the need for temporary script files, keeping your system clean
-- **Simplified Codebase**: Centralizes all Godot operations in one (somewhat) organized file
-- **Better Maintainability**: Makes it easier to add new operations or modify existing ones
-- **Improved Error Handling**: Provides consistent error reporting across all operations
-- **Reduced Overhead**: Minimizes file I/O operations for better performance
+- **一時ファイル不要**: 一時スクリプトファイルの必要性を排除し、システムをクリーンに保つ
+- **簡素化されたコードベース**: すべてのGodot操作を1つの(ある程度)整理されたファイルに集約
+- **優れた保守性**: 新しい操作の追加や既存の操作の変更が容易
+- **改善されたエラーハンドリング**: すべての操作で一貫したエラー報告を提供
+- **オーバーヘッドの削減**: ファイルI/O操作を最小化してパフォーマンスを向上
 
-The bundled script accepts operation type and parameters as JSON, allowing for flexible and dynamic operation execution without generating temporary files for each operation.
+バンドルされたスクリプトは操作タイプとパラメータをJSONとして受け取り、各操作ごとに一時ファイルを生成することなく、柔軟で動的な操作実行を可能にします。
 
-## Troubleshooting
+## トラブルシューティング
 
-- **Godot Not Found**: Set the GODOT_PATH environment variable to your Godot executable
-- **Connection Issues**: Ensure the server is running and restart your AI assistant
-- **Invalid Project Path**: Ensure the path points to a directory containing a project.godot file
-- **Build Issues**: Make sure all dependencies are installed by running `npm install`
-- **For Cursor Specifically**:
--   Ensure the MCP server shows up and is enabled in Cursor settings (Settings > MCP)
--   MCP tools can only be run using the Agent chat profile (Cursor Pro or Business subscription)
--   Use "Yolo Mode" to automatically run MCP tool requests
+- **Godotが見つからない**: GODOT_PATH環境変数をGodot実行ファイルに設定してください
+- **接続の問題**: サーバーが実行中であることを確認し、AIアシスタントを再起動してください
+- **無効なプロジェクトパス**: パスがproject.godotファイルを含むディレクトリを指していることを確認してください
+- **ビルドの問題**: `npm install`を実行してすべての依存関係がインストールされていることを確認してください
+- **Cursor固有の問題**:
+-   Cursor設定(Settings > MCP)でMCPサーバーが表示され有効になっていることを確認してください
+-   MCPツールはAgent chatプロファイル(Cursor ProまたはBusinessサブスクリプション)でのみ実行できます
+-   MCPツールリクエストを自動的に実行するには「Yolo Mode」を使用してください
 
-## License
+## ライセンス
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+このプロジェクトはMITライセンスの下でライセンスされています - 詳細は[LICENSE](LICENSE)ファイルを参照してください。
 
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/coding-solo-godot-mcp-badge.png)](https://mseep.ai/app/coding-solo-godot-mcp)
