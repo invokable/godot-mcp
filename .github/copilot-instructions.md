@@ -77,7 +77,7 @@ npm run build    # TypeScriptをコンパイルしてbuild/に出力
 ## GitHub Copilot CLI用MCP設定
 
 macOSとWSLでパスが違うので分けて設定。  
-WSLは「DドライブにWindows版をSteamでインストールしている」想定なので違うパスの場合は`src/index.ts`の`detectGodotPath()`を修正。  
+WSLは「DドライブにWindows版をSteamでインストールしている」想定なので違うパスの場合は`src/index.ts`の`detectGodotPath()`のlinux用パスを修正。  
 MCP設定の`env`で指定してもおそらく動かない。環境変数`GODOT_PATH`の指定でも動かない。Copilot CLIのバグかもしれない。
 
 ```json
