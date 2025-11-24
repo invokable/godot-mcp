@@ -13,13 +13,12 @@ import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlink
 import { spawn } from 'child_process';
 import { promisify } from 'util';
 import { exec } from 'child_process';
+import { z } from 'zod';
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
-  CallToolRequestSchema,
   ErrorCode,
-  ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 
@@ -113,7 +112,7 @@ interface OperationParams {
  * Main server class for the Godot MCP server
  */
 class GodotServer {
-  private server: Server;
+  private server: McpServer;
   private activeProcess: GodotProcess | null = null;
   private godotPath: string | null = null;
   private operationsScriptPath: string;
@@ -190,23 +189,13 @@ class GodotServer {
     if (debugMode) console.error(`[DEBUG] Operations script path: ${this.operationsScriptPath}`);
 
     // Initialize the MCP server
-    this.server = new Server(
-      {
-        name: 'godot-mcp',
-        version: '0.1.0',
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
+    this.server = new McpServer({
+      name: 'godot-mcp',
+      version: '0.1.0',
+    });
 
     // Set up tool handlers
     this.setupToolHandlers();
-
-    // Error handling
-    this.server.onerror = (error) => console.error('[MCP Error]', error);
 
     // Cleanup on exit
     process.on('SIGINT', async () => {
@@ -824,359 +813,213 @@ class GodotServer {
    * Set up the tool handlers for the MCP server
    */
   private setupToolHandlers() {
-    // Define available tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools:
-        [
-          {
-            name: 'launch_editor',
-            description: 'Launch Godot editor for a specific project',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-              },
-              required: ['projectPath'],
-            },
-          },
-          {
-            name: 'run_project',
-            description: 'Run the Godot project and capture output',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scene: {
-                  type: 'string',
-                  description: 'Optional: Specific scene to run',
-                },
-              },
-              required: ['projectPath'],
-            },
-          },
-          {
-            name: 'get_debug_output',
-            description: 'Get the current debug output and errors',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-              required: [],
-            },
-          },
-          {
-            name: 'stop_project',
-            description: 'Stop the currently running Godot project',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-              required: [],
-            },
-          },
-          {
-            name: 'get_godot_version',
-            description: 'Get the installed Godot version',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-              required: [],
-            },
-          },
-          {
-            name: 'list_projects',
-            description: 'List Godot projects in a directory',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                directory: {
-                  type: 'string',
-                  description: 'Directory to search for Godot projects',
-                },
-                recursive: {
-                  type: 'boolean',
-                  description: 'Whether to search recursively (default: false)',
-                },
-              },
-              required: ['directory'],
-            },
-          },
-          {
-            name: 'get_project_info',
-            description: 'Retrieve metadata about a Godot project',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-              },
-              required: ['projectPath'],
-            },
-          },
-          {
-            name: 'create_scene',
-            description: 'Create a new Godot scene file',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path where the scene file will be saved (relative to project)',
-                },
-                rootNodeType: {
-                  type: 'string',
-                  description: 'Type of the root node (e.g., Node2D, Node3D)',
-                  default: 'Node2D',
-                },
-              },
-              required: ['projectPath', 'scenePath'],
-            },
-          },
-          {
-            name: 'add_node',
-            description: 'Add a node to an existing scene',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path to the scene file (relative to project)',
-                },
-                parentNodePath: {
-                  type: 'string',
-                  description: 'Path to the parent node (e.g., "root" or "root/Player")',
-                  default: 'root',
-                },
-                nodeType: {
-                  type: 'string',
-                  description: 'Type of node to add (e.g., Sprite2D, CollisionShape2D)',
-                },
-                nodeName: {
-                  type: 'string',
-                  description: 'Name for the new node',
-                },
-                properties: {
-                  type: 'object',
-                  description: 'Optional properties to set on the node',
-                },
-              },
-              required: ['projectPath', 'scenePath', 'nodeType', 'nodeName'],
-            },
-          },
-          {
-            name: 'load_sprite',
-            description: 'Load a sprite into a Sprite2D node',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path to the scene file (relative to project)',
-                },
-                nodePath: {
-                  type: 'string',
-                  description: 'Path to the Sprite2D node (e.g., "root/Player/Sprite2D")',
-                },
-                texturePath: {
-                  type: 'string',
-                  description: 'Path to the texture file (relative to project)',
-                },
-              },
-              required: ['projectPath', 'scenePath', 'nodePath', 'texturePath'],
-            },
-          },
-          {
-            name: 'export_mesh_library',
-            description: 'Export a scene as a MeshLibrary resource',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path to the scene file (.tscn) to export',
-                },
-                outputPath: {
-                  type: 'string',
-                  description: 'Path where the mesh library (.res) will be saved',
-                },
-                meshItemNames: {
-                  type: 'array',
-                  items: {
-                    type: 'string',
-                  },
-                  description: 'Optional: Names of specific mesh items to include (defaults to all)',
-                },
-              },
-              required: ['projectPath', 'scenePath', 'outputPath'],
-            },
-          },
-          {
-            name: 'save_scene',
-            description: 'Save changes to a scene file',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path to the scene file (relative to project)',
-                },
-                newPath: {
-                  type: 'string',
-                  description: 'Optional: New path to save the scene to (for creating variants)',
-                },
-              },
-              required: ['projectPath', 'scenePath'],
-            },
-          },
-          {
-            name: 'get_uid',
-            description: 'Get the UID for a specific file in a Godot project (for Godot 4.4+)',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                filePath: {
-                  type: 'string',
-                  description: 'Path to the file (relative to project) for which to get the UID',
-                },
-              },
-              required: ['projectPath', 'filePath'],
-            },
-          },
-          {
-            name: 'update_project_uids',
-            description: 'Update UID references in a Godot project by resaving resources (for Godot 4.4+)',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-              },
-              required: ['projectPath'],
-            },
-          },
-          {
-            name: 'capture_screenshot',
-            description: 'Capture a screenshot of the running Godot project',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-              },
-              required: ['projectPath'],
-            },
-          },
-          {
-            name: 'get_scene_structure',
-            description: 'Retrieve the hierarchical structure of a Godot scene file with optional property and connection information',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                projectPath: {
-                  type: 'string',
-                  description: 'Path to the Godot project directory',
-                },
-                scenePath: {
-                  type: 'string',
-                  description: 'Path to the scene file (relative to project)',
-                },
-                includeProperties: {
-                  type: 'boolean',
-                  description: 'Include node properties in the structure (default: true)',
-                },
-                includeConnections: {
-                  type: 'boolean', 
-                  description: 'Include signal connections in the structure (default: true)',
-                },
-                maxDepth: {
-                  type: 'integer',
-                  description: 'Maximum depth to traverse the scene tree (default: unlimited)',
-                  minimum: 1,
-                },
-              },
-              required: ['projectPath', 'scenePath'],
-            },
-          },
-        ],
-    }));
+    // Register launch_editor tool
+    this.server.registerTool(
+      'launch_editor',
+      {
+        description: 'Launch Godot editor for a specific project',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+        },
+      },
+      async (args: any) => this.handleLaunchEditor(args)
+    );
 
-    // Handle tool calls
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      this.logDebug(`Handling tool request: ${request.params.name}`);
-      switch (request.params.name) {
-        case 'launch_editor':
-          return await this.handleLaunchEditor(request.params.arguments);
-        case 'run_project':
-          return await this.handleRunProject(request.params.arguments);
-        case 'get_debug_output':
-          return await this.handleGetDebugOutput();
-        case 'stop_project':
-          return await this.handleStopProject();
-        case 'get_godot_version':
-          return await this.handleGetGodotVersion();
-        case 'list_projects':
-          return await this.handleListProjects(request.params.arguments);
-        case 'get_project_info':
-          return await this.handleGetProjectInfo(request.params.arguments);
-        case 'create_scene':
-          return await this.handleCreateScene(request.params.arguments);
-        case 'add_node':
-          return await this.handleAddNode(request.params.arguments);
-        case 'load_sprite':
-          return await this.handleLoadSprite(request.params.arguments);
-        case 'export_mesh_library':
-          return await this.handleExportMeshLibrary(request.params.arguments);
-        case 'save_scene':
-          return await this.handleSaveScene(request.params.arguments);
-        case 'get_uid':
-          return await this.handleGetUid(request.params.arguments);
-        case 'update_project_uids':
-          return await this.handleUpdateProjectUids(request.params.arguments);
-        case 'capture_screenshot':
-          return await this.handleCaptureScreenshot(request.params.arguments);
-        case 'get_scene_structure':
-          return await this.handleGetSceneStructure(request.params.arguments);
-        default:
-          throw new McpError(
-            ErrorCode.MethodNotFound,
-            `Unknown tool: ${request.params.name}`
-          );
-      }
-    });
+    // Register run_project tool
+    this.server.registerTool(
+      'run_project',
+      {
+        description: 'Run the Godot project and capture output',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scene: z.string().optional().describe('Optional: Specific scene to run'),
+        },
+      },
+      async (args: any) => this.handleRunProject(args)
+    );
+
+    // Register get_debug_output tool
+    this.server.registerTool(
+      'get_debug_output',
+      {
+        description: 'Get the current debug output and errors',
+        inputSchema: {},
+      },
+      async () => this.handleGetDebugOutput()
+    );
+
+    // Register stop_project tool
+    this.server.registerTool(
+      'stop_project',
+      {
+        description: 'Stop the currently running Godot project',
+        inputSchema: {},
+      },
+      async () => this.handleStopProject()
+    );
+
+    // Register get_godot_version tool
+    this.server.registerTool(
+      'get_godot_version',
+      {
+        description: 'Get the installed Godot version',
+        inputSchema: {},
+      },
+      async () => this.handleGetGodotVersion()
+    );
+
+    // Register list_projects tool
+    this.server.registerTool(
+      'list_projects',
+      {
+        description: 'List Godot projects in a directory',
+        inputSchema: {
+          directory: z.string().describe('Directory to search for Godot projects'),
+          recursive: z.boolean().optional().describe('Whether to search recursively (default: false)'),
+        },
+      },
+      async (args: any) => this.handleListProjects(args)
+    );
+
+    // Register get_project_info tool
+    this.server.registerTool(
+      'get_project_info',
+      {
+        description: 'Retrieve metadata about a Godot project',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+        },
+      },
+      async (args: any) => this.handleGetProjectInfo(args)
+    );
+
+    // Register create_scene tool
+    this.server.registerTool(
+      'create_scene',
+      {
+        description: 'Create a new Godot scene file',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path where the scene file will be saved (relative to project)'),
+          rootNodeType: z.string().optional().default('Node2D').describe('Type of the root node (e.g., Node2D, Node3D)'),
+        },
+      },
+      async (args: any) => this.handleCreateScene(args)
+    );
+
+    // Register add_node tool
+    this.server.registerTool(
+      'add_node',
+      {
+        description: 'Add a node to an existing scene',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path to the scene file (relative to project)'),
+          parentNodePath: z.string().optional().default('root').describe('Path to the parent node (e.g., "root" or "root/Player")'),
+          nodeType: z.string().describe('Type of node to add (e.g., Sprite2D, CollisionShape2D)'),
+          nodeName: z.string().describe('Name for the new node'),
+          properties: z.record(z.any()).optional().describe('Optional properties to set on the node'),
+        },
+      },
+      async (args: any) => this.handleAddNode(args)
+    );
+
+    // Register load_sprite tool
+    this.server.registerTool(
+      'load_sprite',
+      {
+        description: 'Load a sprite into a Sprite2D node',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path to the scene file (relative to project)'),
+          nodePath: z.string().describe('Path to the Sprite2D node (e.g., "root/Player/Sprite2D")'),
+          texturePath: z.string().describe('Path to the texture file (relative to project)'),
+        },
+      },
+      async (args: any) => this.handleLoadSprite(args)
+    );
+
+    // Register export_mesh_library tool
+    this.server.registerTool(
+      'export_mesh_library',
+      {
+        description: 'Export a scene as a MeshLibrary resource',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path to the scene file (.tscn) to export'),
+          outputPath: z.string().describe('Path where the mesh library (.res) will be saved'),
+          meshItemNames: z.array(z.string()).optional().describe('Optional: Names of specific mesh items to include (defaults to all)'),
+        },
+      },
+      async (args: any) => this.handleExportMeshLibrary(args)
+    );
+
+    // Register save_scene tool
+    this.server.registerTool(
+      'save_scene',
+      {
+        description: 'Save changes to a scene file',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path to the scene file (relative to project)'),
+          newPath: z.string().optional().describe('Optional: New path to save the scene to (for creating variants)'),
+        },
+      },
+      async (args: any) => this.handleSaveScene(args)
+    );
+
+    // Register get_uid tool
+    this.server.registerTool(
+      'get_uid',
+      {
+        description: 'Get the UID for a specific file in a Godot project (for Godot 4.4+)',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          filePath: z.string().describe('Path to the file (relative to project) for which to get the UID'),
+        },
+      },
+      async (args: any) => this.handleGetUid(args)
+    );
+
+    // Register update_project_uids tool
+    this.server.registerTool(
+      'update_project_uids',
+      {
+        description: 'Update UID references in a Godot project by resaving resources (for Godot 4.4+)',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+        },
+      },
+      async (args: any) => this.handleUpdateProjectUids(args)
+    );
+
+    // Register capture_screenshot tool
+    this.server.registerTool(
+      'capture_screenshot',
+      {
+        description: 'Capture a screenshot of the running Godot project',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+        },
+      },
+      async (args: any) => this.handleCaptureScreenshot(args)
+    );
+
+    // Register get_scene_structure tool
+    this.server.registerTool(
+      'get_scene_structure',
+      {
+        description: 'Retrieve the hierarchical structure of a Godot scene file with optional property and connection information',
+        inputSchema: {
+          projectPath: z.string().describe('Path to the Godot project directory'),
+          scenePath: z.string().describe('Path to the scene file (relative to project)'),
+          includeProperties: z.boolean().optional().describe('Include node properties in the structure (default: true)'),
+          includeConnections: z.boolean().optional().describe('Include signal connections in the structure (default: true)'),
+          maxDepth: z.number().int().min(1).optional().describe('Maximum depth to traverse the scene tree (default: unlimited)'),
+        },
+      },
+      async (args: any) => this.handleGetSceneStructure(args)
+    );
   }
 
   /**
