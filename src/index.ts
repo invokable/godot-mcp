@@ -17,16 +17,10 @@ import { z } from 'zod';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  ErrorCode,
-  McpError,
-} from '@modelcontextprotocol/sdk/types.js';
 
 // Check if debug mode is enabled
 const DEBUG_MODE: boolean = process.env.DEBUG === 'true';
 const GODOT_DEBUG_MODE: boolean = true; // Always use GODOT DEBUG MODE
-
-const execAsync = promisify(exec);
 
 // Derive __filename and __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
