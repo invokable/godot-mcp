@@ -76,7 +76,8 @@ This direct feedback loop helps AI assistants like Claude understand what works 
   - Load sprites and textures into Sprite2D nodes
   - Export 3D scenes as MeshLibrary resources for GridMap
   - Save scenes with options for creating variants
-  - Analyze scene structure with hierarchical node information, properties, and signal connections
+  - Get insights into scene structure, node hierarchy, signal connections, and behavioral patterns
+  - Get detailed script structure including classes, methods, signals, dependencies, and usage patterns
 - **UID Management** (for Godot 4.4+):
   - Get UID for specific files
   - Update UID references by resaving resources
@@ -131,7 +132,8 @@ Add to your Cline MCP settings file (`~/Library/Application Support/Code/User/gl
         "save_scene",
         "get_uid",
         "update_project_uids",
-        "get_scene_structure"
+        "get_scene_insights",
+        "get_node_insights"
       ]
     }
   }

@@ -75,7 +75,8 @@ Godot MCPは、AIアシスタントがGodotエディターの起動、プロジ�
   - Sprite2Dノードにスプライトとテクスチャを読み込む
   - 3DシーンをGridMap用のMeshLibraryリソースとしてエクスポート
   - バリアント作成オプション付きでシーンを保存
-  - 階層的なノード情報、プロパティ、シグナル接続を含むシーン構造を解析
+  - シーン構造、ノード階層、シグナル接続、行動パターンの詳細な分析
+  - クラス、メソッド、シグナル、依存関係、利用パターンを含むスクリプト構造の詳細な分析
 - **UID管理** (Godot 4.4以降向け):
   - 特定のファイルのUIDを取得
   - リソースを再保存してUID参照を更新
@@ -130,7 +131,8 @@ ClineのMCP設定ファイル(`~/Library/Application Support/Code/User/globalSto
         "save_scene",
         "get_uid",
         "update_project_uids",
-        "get_scene_structure"
+        "get_scene_insights",
+        "get_node_insights"
       ]
     }
   }
