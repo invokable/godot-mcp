@@ -70,7 +70,9 @@ npm run build    # TypeScriptをコンパイルしてbuild/に出力
 
 ### 注意点
 
-- `upstream`リモートは`https://github.com/Coding-Solo/godot-mcp.git`を指している必要がある
+- `upstream`リモートは `https://github.com/Coding-Solo/godot-mcp.git` を指している必要がある
+- オリジナルでマージされてないバラバラなプルリクエストを取り込むのでコンフリクトが発生することが多い
+- `@modelcontextprotocol/sdk`をバージョンアップして`src/index.ts`のコードがかなり変わっているのでそのままマージはできない場合が多い
 - 競合が発生した場合は手動で解決してからコミット
 - マージ後は必ず`npm run build`を実行してビルド成功を確認
 - README.mdが変更された場合は日本語版`README_ja.md`も更新すること
