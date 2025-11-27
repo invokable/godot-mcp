@@ -11,8 +11,6 @@ import { fileURLToPath } from 'url';
 import { join, dirname, basename, normalize } from 'path';
 import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { spawn } from 'child_process';
-import { promisify } from 'util';
-import { exec } from 'child_process';
 import { z } from 'zod';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
